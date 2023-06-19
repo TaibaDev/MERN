@@ -1,12 +1,16 @@
 import "./App.css";
-import LeadGrid from "./LeadGrid";
+// import TutsGrid from "./TutsGrid";
+import TutsGridOne from "./TutsGridOne";
+// import LeadGrid from "./LeadGrid";
 // import ReactGrid from "./ReactGrid";
 
 function App() {
   return (
     <div className="App">
       {/* <ReactGrid /> */}
-      <LeadGrid/>
+      {/* <LeadGrid /> */}
+      {/* <TutsGrid /> */}
+      <TutsGridOne />
     </div>
   );
 }

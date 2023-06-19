@@ -6,26 +6,39 @@ import "ag-grid-enterprise";
 import "ag-grid-community/styles/ag-grid.css";
 import "ag-grid-community/styles/ag-theme-alpine.css";
 import "./App.css";
-function LeadGrid() {
+function TutsGridOne() {
   const [gridApi, setGridApi] = useState(null);
-  const perPage = 3;
-
-  const onGridReady = (params) => {
-    setGridApi(params.api);
-  };
+  const perPage = 7;
 
   useEffect(() => {
     if (gridApi) {
       const dataSource = {
         getRows: (params) => {
-          // Use startRow and endRow for sending pagination to Backend
-          //   params.startRow = 2;
-          //   params.endRow = 5;
-          console.log({ params });
+          console.log(JSON.stringify(params, null, 1));
+          const { sortModel, filterModel, startRow, endRow } = params;
+          console.log({
+            startRow,
+            endRow,
+            filterModel,
+            sortModel,
+          });
           gridApi.showLoadingOverlay();
-          const page = params.endRow / perPage;
-          console.log({ page });
-          fetch(`http://localhost:5000/leads?per_page=${perPage}&page=${page}`)
+          let baseUrl = `http://localhost:5000/leads?`;
+          //sorting
+          if (sortModel.length) {
+            const { colId, sort } = sortModel[0];
+            baseUrl += `_sort=${colId}&_order=${sort}&`;
+          }
+          //filtering
+          const filterKeys = Object.keys(filterModel);
+          filterKeys.forEach((filter) => {
+            baseUrl += `${filter}=${filterModel[filter].filter}&`;
+          });
+          //pagination
+          //   const page = params.endRow / perPage;
+          baseUrl += `startRow=${startRow}&endRow=${endRow}`;
+          //   baseUrl += `per_page=${startRow}&page=${endRow}`;
+          fetch(baseUrl)
             .then((resp) => resp.json())
             .then((res) => {
               if (!res.data.length) {
@@ -46,7 +59,10 @@ function LeadGrid() {
       gridApi.setDatasource(dataSource);
     }
   }, [gridApi]);
-
+  //onGridReady*****
+  const onGridReady = (params) => {
+    setGridApi(params.api);
+  };
   const columnDefs = [
     {
       field: "customer_name",
@@ -74,12 +90,14 @@ function LeadGrid() {
     enableServerSideFilter: true,
     enableServerSideSorting: true,
   };
-
+  // customer_name, email and area
+  //
   return (
     <div className="App">
+      <h2>grid one!</h2>
       <div
         className="ag-theme-alpine ag-style"
-        style={{ height: "550px", width: "900px" }}
+        // style={{ height: "550px", width: "700px" }}
       >
         <AgGridReact
           pagination={true}
@@ -90,7 +108,8 @@ function LeadGrid() {
           cacheBlockSize={perPage}
           onGridReady={onGridReady}
           rowHeight={60}
-          defaultColDef={{ flex: 1 }}
+          domLayout="autoHeight"
+          defaultColDef={{ filter: true, floatingFilter: true, sortable: true }}
           overlayLoadingTemplate={"Please wait while your rows are loading..."}
           overlayNoRowsTemplate={"No data found to display."}
         ></AgGridReact>
@@ -99,4 +118,4 @@ function LeadGrid() {
   );
 }
 
-export default LeadGrid;
+export default TutsGridOne;
